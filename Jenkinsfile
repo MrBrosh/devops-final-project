@@ -6,14 +6,14 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/MrBrosh/devops-final-project.git'
             }
         }
-       stage('Terraform Init & Apply') {
+        stage('Terraform Init & Apply') {
             steps {
                 dir('terraform') {
                     sh '''
                     if ! command -v terraform &> /dev/null; then
                         curl -fsSL https://releases.hashicorp.com/terraform/1.5.0/terraform_1.5.0_linux_amd64.zip -o terraform.zip
-                        unzip terraform.zip
-                        sudo mv terraform /usr/local/bin/
+                        unzip -o terraform.zip
+                        mv terraform /usr/local/bin/
                     fi
                     terraform init
                     terraform apply -auto-approve
@@ -24,7 +24,6 @@ pipeline {
         stage('Ansible Playbook') {
             steps {
                 dir('ansible') {
-                    // כאן נריץ את ה-playbook לאחר שהשרת יוקם
                     sh 'ansible-playbook -i ../terraform/inventory playbook.yml'
                 }
             }
