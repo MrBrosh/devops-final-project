@@ -28,6 +28,22 @@ data "aws_vpc" "default" {
   default = true
 }
 
+data "aws_ami" "ubuntu_2404" {
+  most_recent = true
+
+  owners = ["099720109477"] # Canonical
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
 resource "aws_security_group" "web_sg" {
   name        = "${var.project_name}-web-sg"
   description = "Allow SSH and HTTP inbound"
@@ -76,7 +92,7 @@ resource "aws_key_pair" "web_key" {
 }
 
 resource "aws_instance" "web" {
-  ami           = "ami-0453ec754f44f9a4a" # Ubuntu 24.04 LTS
+  ami           = data.aws_ami.ubuntu_2404.id
   instance_type = "t3.micro"
   key_name      = aws_key_pair.web_key.key_name
 
