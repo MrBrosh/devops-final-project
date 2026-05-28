@@ -22,7 +22,7 @@ pipeline {
         stage('Ansible Playbook') {
             steps {
                 dir('ansible') {
-                    sh 'ansible-playbook -i ../terraform/inventory.ini playbook.yml'
+                    sh 'ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ../terraform/inventory.ini --ssh-common-args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" playbook.yml'
                 }
             }
         }
