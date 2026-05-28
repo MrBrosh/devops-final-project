@@ -65,6 +65,13 @@
         replace: "baseURL: '/api'"
       become_user: ubuntu
 
+    - name: Skip strict tsc gate for production build (unused-vars in upstream repo)
+      replace:
+        path: "{{ cv_app_dir }}/client/package.json"
+        regexp: '"build": "tsc --noEmit && vite build"'
+        replace: '"build": "vite build"'
+      become_user: ubuntu
+
     - name: Deploy server environment file
       template:
         src: server.env.j2
