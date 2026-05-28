@@ -14,3 +14,21 @@
         name: nginx
         state: started
         enabled: yes
+
+    - name: Deploy simple website
+      copy:
+        dest: /var/www/html/index.html
+        mode: "0644"
+        content: |
+          <!doctype html>
+          <html lang="en">
+            <head>
+              <meta charset="utf-8" />
+              <meta name="viewport" content="width=device-width, initial-scale=1" />
+              <title>DevOps Final Project</title>
+            </head>
+            <body style="font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; margin: 48px;">
+              <h1>DevOps Final Project</h1>
+              <p>Provisioned with Terraform and configured with Ansible.</p>
+            </body>
+          </html>

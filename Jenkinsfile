@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent { label 'host' }
     stages {
         stage('Checkout') {
             steps {
@@ -9,15 +9,41 @@ pipeline {
         stage('Terraform Init & Apply') {
             steps {
                 dir('terraform') {
-                    sh 'terraform init'
-                    sh 'terraform apply -auto-approve'
+                    script {
+                        if (isUnix()) {
+                            sh 'terraform init'
+                            sh 'terraform apply -auto-approve'
+                        } else {
+                            powershell 'terraform init'
+                            powershell 'terraform apply -auto-approve'
+                        }
+                    }
                 }
             }
         }
         stage('Ansible Playbook') {
             steps {
                 dir('ansible') {
-                    sh 'ansible-playbook -i ../terraform/inventory playbook.yml'
+                    script {
+                        if (isUnix()) {
+                            sh 'ansible-playbook -i ../terraform/inventory.ini playbook.yml'
+                        } else {
+                            powershell 'ansible-playbook -i ..\\terraform\\inventory.ini playbook.yml'
+                        }
+                    }
+                }
+            }
+        }
+        stage('Validate Website') {
+            steps {
+                dir('terraform') {
+                    script {
+                        if (isUnix()) {
+                            sh 'IP=$(terraform output -raw public_ip) && curl -f "http://$IP" | head -n 20'
+                        } else {
+                            powershell '$ip = terraform output -raw public_ip; (Invoke-WebRequest -UseBasicParsing -Uri "http://$ip").StatusCode'
+                        }
+                    }
                 }
             }
         }
