@@ -1,125 +1,126 @@
-# מטלת DevOps – Jenkins + Terraform + Ansible
+# DevOps Final Project – Jenkins + Terraform + Ansible
 
-**סטודנט:** Matan Brosh  
-**ריפוזיטורי:** https://github.com/MrBrosh/devops-final-project  
-**אפליקציה מפורסת (בונוס):** [Cv-Builder](https://github.com/MrBrosh/Cv-Builder)
-
----
-
-## מטרת הפרויקט
-
-Pipeline ב‑Jenkins שמבצע אוטומציה מלאה:
-
-1. **Terraform** – הקמת שרת Ubuntu בענן (AWS EC2) + Security Group + מפתח SSH
-2. **Ansible** – התקנה והגדרה של אפליקציית **CV Builder** (React + Node.js) מאחורי Nginx
-3. **ולידציה** – בדיקה שהאתר וה‑API נגישים דרך HTTP
+**Student:** Matan Brosh  
+**Repository:** https://github.com/MrBrosh/devops-final-project  
+**Deployed app (bonus):** [Cv-Builder](https://github.com/MrBrosh/Cv-Builder)
 
 ---
 
-## ארכיטקטורה (תרשים זרימה)
+## Project goal
+
+A Jenkins pipeline that automates:
+
+1. **Terraform** – provision an Ubuntu server on AWS (EC2) + Security Group + SSH key
+2. **Ansible** – install and configure the **CV Builder** app (React + Node.js) behind Nginx
+3. **Validation** – verify the website and API are reachable over HTTP
+
+---
+
+## Architecture flow
 
 ```
-מרצה / סטודנט
-      │
-      ▼
-┌─────────────┐     git pull      ┌──────────────────┐
-│   Jenkins   │ ───────────────►  │ devops-final-    │
-│  (Docker)   │                   │ project (GitHub)   │
-└──────┬──────┘                   └──────────────────┘
-       │ Build Now
-       ▼
-┌─────────────┐   terraform apply   ┌─────────────┐
-│  Terraform  │ ──────────────────► │  AWS EC2    │
-└─────────────┘                     └──────┬──────┘
-       │                                   │
-       │ ansible-playbook                  │ SSH :22
-       ▼                                   ▼
-┌─────────────┐                     ┌─────────────┐
-│   Ansible   │ ──────────────────► │ CV Builder  │
-│             │   clone + build     │ Nginx :80   │
-└─────────────┘                     └─────────────┘
+Lecturer / Student
+      |
+      v
++-------------+     git pull      +------------------+
+|   Jenkins   | ----------------> | devops-final-    |
+|  (Docker)   |                   | project (GitHub)   |
++------+------+                   +------------------+
+       | Build Now
+       v
++-------------+   terraform apply   +-------------+
+|  Terraform  | -----------------> |  AWS EC2    |
++-------------+                     +------+------+
+       |                                   |
+       | ansible-playbook                  | SSH :22
+       v                                   v
++-------------+                     +-------------+
+|   Ansible   | -----------------> | CV Builder  |
+|             |   clone + build     | Nginx :80   |
++-------------+                     +-------------+
 ```
 
 ---
 
-## למרצה – איך להריץ ולבדוק
+## For the lecturer – how to run and verify
 
-> **פרטי התחברות (Jenkins + אתר)** נמסרו בהודעה בידיעון.  
-> **אין לשמור סיסמאות בקובץ זה או ב‑Git.**
+> **Login credentials (Jenkins + website)** were sent via the course Moodle message.  
+> **Do not store passwords in this file or in Git.**
 
-### 1) כניסה ל‑Jenkins
+### 1) Sign in to Jenkins
 
-| פריט | ערך |
-|------|-----|
+| Item | Value |
+|------|-------|
 | **URL** | http://13.63.160.119:8080 |
-| **משתמש / סיסמה** | לפי מה שנמסר בידיעון |
+| **Username / password** | As provided in Moodle |
 
-המשתמש מוגדר עם הרשאות מוגבלות (Matrix):
-- **Read** – כניסה לדשבורד
-- **Job → Build, Read, Workspace** – הרצת Pipeline וצפייה בלוגים
+The lecturer account uses limited permissions (Matrix):
+
+- **Overall → Read** – access the dashboard
+- **Job → Build, Read, Workspace** – run the pipeline and view logs
 - **View → Read**
 
-### 2) הרצת ה‑Pipeline
+### 2) Run the pipeline
 
-1. התחברות ל‑Jenkins
-2. בחר Job: **`devops-final-project`**
-3. לחץ **Build Now**
-4. פתח את ה‑Build → **Console Output** לעקוב אחרי השלבים:
+1. Sign in to Jenkins
+2. Open job: **`devops-final-project`**
+3. Click **Build Now**
+4. Open the build → **Console Output** and follow:
    - Checkout
    - Terraform Init & Apply
    - Ansible Playbook
    - Validate Website
 
-**זמן ריצה משוער:** כ‑10–15 דקות (תלוי ב‑build של React).
+**Estimated runtime:** about 10–15 minutes (React build may take a while).
 
-### 3) בדיקת האתר אחרי Build מוצלח
+### 3) Check the website after a successful build
 
-בסוף ה‑Build, בשלב Terraform, מופיע output:
+At the end of the Terraform stage, the console shows:
 
 ```
 public_ip = "x.x.x.x"
 ```
 
-פתח בדפדפן:
+Open in a browser:
 
-| מה לבדוק | כתובת |
-|----------|--------|
-| **אתר CV Builder** | `http://<public_ip>/` |
-| **בדיקת API** | `http://<public_ip>/health` |
+| What to check | URL |
+|---------------|-----|
+| **CV Builder app** | `http://<public_ip>/` |
+| **API health** | `http://<public_ip>/health` |
 
-**התחברות לאפליקציה** – לפי פרטים בידיעון (משתמש admin מוגדר אוטומטית בהעלאת השרת).
+**App login** – credentials were sent via Moodle (admin user is created automatically on the server).
 
-### 4) מה אמור להופיע בהצלחה
+### 4) Expected success indicators
 
-- Jenkins: **Finished: SUCCESS** (ירוק)
-- Console – שלב Validate מציג תשובה מ‑`/health` ואת כותרת **CV Builder** בדף הבית
-- בדפדפן – מסך התחברות / עורך קורות חיים
-
----
-
-## בונוס – פריסת אפליקציה מלאה
-
-במקום דף HTML סטטי, ה‑Pipeline מפריס את **[Cv-Builder](https://github.com/MrBrosh/Cv-Builder)**:
-
-- Frontend: React + Vite (מוגש דרך Nginx)
-- Backend: Node.js + Express (רץ כ‑`systemd`, proxy ל‑`/api`)
-- תכונות: עריכת קו"ח, תצוגה מקדימה, שמירה בשרת, שיפור טקסט ב‑AI (אם הוגדר מפתח Gemini)
+- Jenkins: **Finished: SUCCESS** (green)
+- Console – Validate stage shows `/health` response and **CV Builder** on the homepage
+- Browser – login screen / CV editor
 
 ---
 
-## מבנה הריפוזיטורי
+## Bonus – full application deployment
+
+Instead of a static HTML page, the pipeline deploys **[Cv-Builder](https://github.com/MrBrosh/Cv-Builder)**:
+
+- **Frontend:** React + Vite (served by Nginx)
+- **Backend:** Node.js + Express (`systemd`, reverse proxy at `/api`)
+- **Features:** CV editor, live preview, server-side save, AI text improvement (if Gemini key is configured)
+
+---
+
+## Repository structure
 
 ```
 devops-final-project/
 ├── Jenkinsfile              # Pipeline (Checkout → Terraform → Ansible → Validate)
-├── README.md                # מסמך זה
-├── jenkins.Dockerfile       # Image מותאם: Jenkins + Terraform + Ansible
+├── README.md                # This file
+├── jenkins.Dockerfile         # Custom image: Jenkins + Terraform + Ansible
 ├── terraform/
-│   ├── main.tf              # EC2, SG, key pair, inventory, AMI Ubuntu 24.04
+│   ├── main.tf              # EC2, SG, key pair, inventory, Ubuntu 24.04 AMI
 │   ├── variables.tf
 │   └── outputs.tf           # public_ip, inventory_path
 └── ansible/
-    ├── playbook.yml         # פריסת CV Builder
+    ├── playbook.yml         # CV Builder deployment
     └── templates/
         ├── nginx-cv-builder.conf.j2
         ├── cv-builder.service.j2
@@ -128,63 +129,63 @@ devops-final-project/
 
 ---
 
-## שלבי ה‑Pipeline (פירוט)
+## Pipeline stages
 
-| שלב | כלי | פעולה |
-|-----|-----|--------|
-| Checkout | Git | משיכת קוד מ‑GitHub |
-| Terraform Init & Apply | Terraform | יצירת/עדכון תשתית AWS |
-| Ansible Playbook | Ansible | התקנת Node, Nginx, clone Cv-Builder, build, הפעלה |
-| Validate Website | curl | `GET /health` + בדיקת דף הבית |
+| Stage | Tool | Action |
+|-------|------|--------|
+| Checkout | Git | Pull code from GitHub |
+| Terraform Init & Apply | Terraform | Create/update AWS infrastructure |
+| Ansible Playbook | Ansible | Install Node, Nginx, clone Cv-Builder, build, start services |
+| Validate Website | curl | `GET /health` + check homepage title |
 
 ---
 
-## דרישות טכניות (סביבת Jenkins)
+## Jenkins environment
 
-- **Jenkins** רץ ב‑Docker על EC2 (`jenkins-devops:lts`)
-- **Terraform** + **Ansible** מותקנים בתוך image
-- **AWS Credentials** ב‑Jenkins (Global): `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`  
-  *(לא נכללים ב‑Git)*
+- **Jenkins** runs in Docker on EC2 (`jenkins-devops:lts` image)
+- **Terraform** and **Ansible** are included in the image
+- **AWS credentials** in Jenkins (Global): `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`  
+  *(not committed to Git)*
 
-### הגדרות AWS
+### AWS settings
 
-| פרמטר | ערך |
-|--------|-----|
+| Parameter | Value |
+|-----------|-------|
 | Region | `us-east-1` |
 | Instance type | `t3.micro` (Free Tier eligible) |
-| AMI | Ubuntu 24.04 (נבחר אוטומטית) |
-| פורטים פתוחים | 22 (SSH), 80 (HTTP), 8080 (Jenkins) |
+| AMI | Ubuntu 24.04 (auto-selected) |
+| Open ports | 22 (SSH), 80 (HTTP), 8080 (Jenkins) |
 
 ---
 
-## פתרון בעיות נפוצות
+## Troubleshooting
 
-| בעיה | פתרון |
-|------|--------|
-| Build נכשל ב‑Terraform | בדוק AWS Credentials ב‑Jenkins; בדוק מכסת Free Tier |
-| Ansible – SSH נכשל | המתן דקה והרץ שוב (שרת חדש עולה); בדוק Security Group לפורט 22 |
-| Build נכשל ב‑npm | שרת קטן – הוסף swap; הרץ Build שוב |
-| האתר לא נטען | בדוק `public_ip` מה‑output; וודא SG פותח פורט 80 |
-| Jenkins לא נגיש | וודא שפורט 8080 פתוח ב‑Security Group |
+| Issue | What to try |
+|-------|-------------|
+| Terraform fails | Check AWS credentials in Jenkins; check Free Tier limits |
+| Ansible SSH fails | Wait 1 minute and rebuild (new instance boot); check SG allows port 22 |
+| npm build fails | Small instance – swap is enabled; retry the build |
+| Website not loading | Use `public_ip` from Terraform output; check SG allows port 80 |
+| Jenkins unreachable | Check SG allows inbound port 8080 |
 
 ---
 
-## קישורים
+## Links
 
-| משאב | קישור |
-|------|--------|
-| ריפוזיטורי DevOps (מטלה) | https://github.com/MrBrosh/devops-final-project |
-| ריפוזיטורי CV Builder | https://github.com/MrBrosh/Cv-Builder |
+| Resource | URL |
+|----------|-----|
+| DevOps repo (assignment) | https://github.com/MrBrosh/devops-final-project |
+| CV Builder repo | https://github.com/MrBrosh/Cv-Builder |
 | Jenkins | http://13.63.160.119:8080 |
 
 ---
 
-## הערות אבטחה
+## Security notes
 
-- מפתחות AWS, SSH וסיסמאות **לא** נשמרים ב‑Git
-- גישת המרצה ל‑Jenkins מוגבלת (ללא Admin)
-- מומלץ להגביל Security Group לפורט 8080 ל‑IP ספציפי לאחר בדיקת המטלה
+- AWS keys, SSH keys, and passwords are **not** stored in Git
+- Lecturer Jenkins access is limited (no Admin)
+- Consider restricting Security Group port 8080 to specific IPs after grading
 
 ---
 
-**בהצלחה!**
+**Good luck!**
