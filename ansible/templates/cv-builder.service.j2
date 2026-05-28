@@ -8,7 +8,7 @@ User=ubuntu
 Group=ubuntu
 WorkingDirectory={{ cv_app_dir }}/server
 EnvironmentFile={{ cv_app_dir }}/server/.env
-ExecStart=/usr/bin/node dist/index.js
+ExecStart=/usr/bin/npx tsx src/index.ts
 Restart=on-failure
 RestartSec=5
 

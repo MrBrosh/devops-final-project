@@ -97,14 +97,6 @@
         HOME: "/home/ubuntu"
         NODE_OPTIONS: "--max-old-space-size=768"
 
-    - name: Build Node.js server for production
-      command: npm run build
-      args:
-        chdir: "{{ cv_app_dir }}/server"
-      become_user: ubuntu
-      environment:
-        HOME: "/home/ubuntu"
-
     - name: Install systemd unit for CV Builder API
       template:
         src: cv-builder.service.j2
