@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'host' }
+    agent any
     stages {
         stage('Checkout') {
             steps {
@@ -29,7 +29,7 @@ pipeline {
         stage('Validate Website') {
             steps {
                 dir('terraform') {
-                    sh 'IP=$(terraform output -raw public_ip) && curl -fsS "http://$IP" | head -n 20'
+                    sh 'IP=$(terraform output -raw public_ip) && curl -fsS "http://$IP" | sed -n "1,20p"'
                 }
             }
         }
