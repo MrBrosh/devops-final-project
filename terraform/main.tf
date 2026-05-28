@@ -9,6 +9,10 @@ terraform {
       source  = "hashicorp/aws"
       version = ">= 5.0.0"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = ">= 3.6.0"
+    }
     tls = {
       source  = "hashicorp/tls"
       version = ">= 4.0.0"
@@ -62,8 +66,12 @@ resource "tls_private_key" "web_ssh" {
   rsa_bits  = 4096
 }
 
+resource "random_id" "key_suffix" {
+  byte_length = 4
+}
+
 resource "aws_key_pair" "web_key" {
-  key_name   = "${var.project_name}-key"
+  key_name   = "${var.project_name}-key-${random_id.key_suffix.hex}"
   public_key = tls_private_key.web_ssh.public_key_openssh
 }
 
