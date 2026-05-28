@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'host' }
+    agent any
     stages {
         stage('Checkout') {
             steps {
@@ -9,14 +9,12 @@ pipeline {
         stage('Terraform Init & Apply') {
             steps {
                 dir('terraform') {
-                    script {
-                        if (isUnix()) {
-                            sh 'terraform init'
-                            sh 'terraform apply -auto-approve'
-                        } else {
-                            powershell 'terraform init'
-                            powershell 'terraform apply -auto-approve'
-                        }
+                    withCredentials([
+                        string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
+                        string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
+                    ]) {
+                        sh 'terraform init'
+                        sh 'terraform apply -auto-approve'
                     }
                 }
             }
@@ -24,26 +22,14 @@ pipeline {
         stage('Ansible Playbook') {
             steps {
                 dir('ansible') {
-                    script {
-                        if (isUnix()) {
-                            sh 'ansible-playbook -i ../terraform/inventory.ini playbook.yml'
-                        } else {
-                            powershell 'ansible-playbook -i ..\\terraform\\inventory.ini playbook.yml'
-                        }
-                    }
+                    sh 'ansible-playbook -i ../terraform/inventory.ini playbook.yml'
                 }
             }
         }
         stage('Validate Website') {
             steps {
                 dir('terraform') {
-                    script {
-                        if (isUnix()) {
-                            sh 'IP=$(terraform output -raw public_ip) && curl -f "http://$IP" | head -n 20'
-                        } else {
-                            powershell '$ip = terraform output -raw public_ip; (Invoke-WebRequest -UseBasicParsing -Uri "http://$ip").StatusCode'
-                        }
-                    }
+                    sh 'IP=$(terraform output -raw public_ip) && curl -fsS "http://$IP" | head -n 20'
                 }
             }
         }
