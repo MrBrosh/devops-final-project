@@ -69,7 +69,7 @@ resource "aws_key_pair" "web_key" {
 
 resource "aws_instance" "web" {
   ami           = "ami-0453ec754f44f9a4a" # Ubuntu 24.04 LTS
-  instance_type = "t2.micro"
+  instance_type = "t3.micro"
   key_name      = aws_key_pair.web_key.key_name
 
   vpc_security_group_ids = [aws_security_group.web_sg.id]
