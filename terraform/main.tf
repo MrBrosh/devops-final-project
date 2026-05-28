@@ -91,6 +91,6 @@ resource "local_file" "ansible_inventory" {
   filename = "${path.module}/inventory.ini"
   content  = <<-EOT
   [web]
-  ${aws_instance.web.public_ip} ansible_user=ubuntu ansible_ssh_private_key_file=${path.module}/web_key.pem
+  ${aws_instance.web.public_ip} ansible_user=ubuntu ansible_ssh_private_key_file=${abspath(path.module)}/web_key.pem
   EOT
 }
