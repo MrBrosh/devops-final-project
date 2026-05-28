@@ -29,7 +29,11 @@ pipeline {
         stage('Validate Website') {
             steps {
                 dir('terraform') {
-                    sh 'IP=$(terraform output -raw public_ip) && curl -fsS "http://$IP" | sed -n "1,20p"'
+                    sh '''
+                        IP=$(terraform output -raw public_ip)
+                        curl -fsS "http://${IP}/health"
+                        curl -fsS "http://${IP}/" | grep -i "CV Builder"
+                    '''
                 }
             }
         }
